@@ -820,6 +820,115 @@ request.setAttribute("members", members);
 Sets the name and value of `attribute`. Can be passed to an `html/jsp` file.
 
 
+```xml
+## 2. A simple `spring-webmvc` project configuration
+
+Configure the `WEB-INF/web.xml` file as follows:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+    version="3.0">
+
+  <display-name>springMVC</display-name>
+
+  Deploying DispatcherServlet -->
+  <servlet>
+    <servlet-name>springmvc</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:springmvc-servlet.xml</param-value>
+    </init-param>
+    <!-- Load the servlet immediately upon container restart -->
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>springmvc</servlet-name>
+    <!-- Process all URLs -->
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+  <!-- Define application listener -->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+</web-app>
+```
+
+There are two entry classes here:
+
+- `servlet-class` [org.springframework.web.servlet.DispatcherServlet](https://github.com/spring-projects/spring-framework/blob/v5.3.10/spring-webmvc/src/main/java/org/springframework/web/servlet/DispatcherServlet.java)
+  : Specifies the class used to handle the corresponding URL request.
+- `listener-class` [org.springframework.web.context.ContextLoaderListener](https://github.com/spring-projects/spring-framework/blob/v5.3.10/spring-web/src/main/java/org/springframework/web/context/ContextLoaderListener.java)
+  : Set up event listeners so that they are notified when a session or servlet environment is created, modified, or deleted.
+
+These two classes are defined in `spring-webmvc` and `spring-web` respectively. We will analyze them one by one below.
+
+## 3. DispatcherServlet
+
+Let's first look at the inheritance relationship of `DispatcherServlet`:
+
+```
+- javax.servlet.Servlet
+  - javax.servlet.GenericServlet
+    - javax.servlet.http.HttpServlet
+      - HttpServletBean
+        - FrameworkServlet
+          - DispatcherServlet
+```
+
+### 3.1. javax.servlet.Servlet
+
+First, let's look at [javax.servlet.Servlet](https://github.com/javaee/servlet-spec/blob/4.0.1/src/main/java/javax/servlet/Servlet.java).
+
+The `javax.servlet.Servlet` class primarily defines two methods:
+
+- `init`: Initializes the Servlet, executed only once.
+- `service`: This method is called to respond to requests; it is invoked with every HTTP request.
+
+```java
+public interface Servlet {
+    // Initialize the Servlet, execute only once
+    public void init(ServletConfig config) throws ServletException;
+
+    // This method is called to respond to requests; it is invoked with every HTTP request.
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException;
+
+    // Destroy the Servlet
+    public void destroy();
+}
+```
+
+### 3.2. javax.servlet.GenericServlet
+
+再来看看 [javax.servlet.GenericServlet](https://github.com/javaee/servlet-spec/blob/4.0.1/src/main/java/javax/servlet/GenericServlet.java)
+
+`javax.servlet.GenericServlet` primarily overrides the `init` method.
+
+```java
+public abstract class GenericServlet implements Servlet, ServletConfig, java.io.Serializable {
+    public GenericServlet() {}
+
+    // Add configuration initialization
+    public void init(ServletConfig config) throws ServletException {
+        this.config = config;
+        this.init();
+    }
+
+    // Reserve parameterless initialization
+    public void init() throws ServletException {}
+
+    // Leave it to subclasses to implement
+    public abstract void service(ServletRequest req, ServletResponse res) throws ServletException, IOException;
+}
+```
+
+
+
 
 ---
 # Reference

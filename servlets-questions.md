@@ -633,3 +633,9 @@ public class SimpleServlet extends HttpServlet {
 </div>
 
 https://github.com/waylau/servlet-3.1-specification/tree/00f4434b0dde635bf0e95893bcf9b52e998e0afd
+
+
+```bash
+contents of the `WEB-INF` directory are visible to servlet code using the `getResource` and `getResourceAsStream` method calls on the `ServletContext`, and may be exposed using the `RequestDispatcher` calls. Client cannot directly access all files in `WEB-INF`. Instead, access is possible through a servlet. https://stackoverflow.com/questions/19786142/what-is-web-inf-used-for-in-a-java-ee-web-application.
+
+```

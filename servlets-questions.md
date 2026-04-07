@@ -635,7 +635,194 @@ public class SimpleServlet extends HttpServlet {
 https://github.com/waylau/servlet-3.1-specification/tree/00f4434b0dde635bf0e95893bcf9b52e998e0afd
 
 
-```bash
+```XML
 contents of the `WEB-INF` directory are visible to servlet code using the `getResource` and `getResourceAsStream` method calls on the `ServletContext`, and may be exposed using the `RequestDispatcher` calls. Client cannot directly access all files in `WEB-INF`. Instead, access is possible through a servlet. https://stackoverflow.com/questions/19786142/what-is-web-inf-used-for-in-a-java-ee-web-application.
 
 ```
+
+```
+It is a Java-based Web Application programming technology that enables the creation of dynamic web pages.
+
+---
+
+# characteristic
+
+```java
+@WebServlet(name = "hellowServlet", urlPatterns = "/hello")  
+class HelloServlet extends HttpServlet {  
+  
+    @Override  
+    protected void service(
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) {  
+        // Application logic  
+    }  
+}
+
+### Servlet Diagrams
+
+The following are the characteristics of a servlet.
+
+- When the URL of urlPatterns(/hello) is called, the servlet code is executed.
+- HTTP request information can be conveniently used with HttpServletRequest.
+- HTTP response information can be conveniently provided using HttpServletResponse.
+
+---
+
+# Operation Flow
+
+```
++-------------+      +-----------------+      +----------+
+|   Client    |----->|  Web Application|----->| Servlet  |
+|             |<-----|    Server       |<-----| Container|
++-------------+      +-----------------+      +----------+
+```
+
+- A client, such as a browser, sends a request to an address like `localhost:8080/hello`.
+- `WAS` creates new `Request` and `Response` objects and executes `helloServlet`.
+- Creates an HTTP response message based on the return value and sends it to the client.
+
+---
+# Servlet Container
+
+A WAS that supports Servlets, like Tomcat, is called a Servlet Container.
+
+It performs the following functions.
+
+- The servlet container manages the lifecycle of servlet objects.
+    - eg
+        - Create, initialize, call, terminate
+- Servlet objects are managed as singletons
+    This is because it is inefficient to keep creating objects whenever a customer request comes in.
+    - Servlet objects are created in advance at the time of initial loading and reused.
+    - All customer requests access the same servlet object instance.
+    Therefore, you must be careful when using shared variables.
+- It terminates together with the servlet container.
+- JSP is also converted into a servlet and used.
+- Supports multi-threaded processing for concurrent requests.
+
+---
+
+# Usage Example
+
+## request.getParameter
+
+```java
+//http://localhost:8080/servlet/members/save?username=kim&age=20
+@WebServlet(
+    name = "memberSaveServlet",
+    urlPatterns = "/servlet/members/save"
+)  
+public class MemberSaveServlet extends HttpServlet {
+    @Override  
+    protected void service(
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) throws ServletException, IOException {  
+        String username = request.getParameter("username");  
+        int age = Integer.parseInt(request.getParameter("age"));
+    
+        response.setContentType("text/html");  
+        response.setCharacterEncoding("utf-8");
+        
+        PrintWriter w = response.getWriter();  
+        w.write("<html>\n");
+        ...
+}
+```
+
+You can obtain the `parameter` of the `request` sent to the address `/servlet/members/save` through `request.getParameter`.
+
+POST requests can also be received using `getParameter`.
+```java
+w.write("<!DOCTYPE html>\n" +  
+        "<html>\n" +  
+        "<head>\n" +  
+            " <meta charset=\"UTF-8\">\n" +  
+            " <title>Title</title>\n" +  
+        "</head>\n" +  
+        "<body>\n" +  
+        "<form action=\"/servlet/members/save\" method=\"post\">\n" +  
+            " username: <input type=\"text\" name=\"username\" />\n" +  
+            " age: <input type=\"text\" name=\"age\" />\n" +  
+            " <button type=\"submit\">전송</button>\n" +  
+        "</form>\n" +  
+        "</body>\n" +  
+        "</html>\n");
+```
+
+As shown above, when sending a `POST` request from `html` containing a `form`, the message body value becomes `username=kim&age=20`.
+
+## request.getInputStream
+
+```java
+@Override  
+protected void service(
+    HttpServletRequest request,
+    HttpServletResponse response
+) throws ServletException, IOException {
+    ServletInputStream inputStream = request.getInputStream();  
+    
+    String messageBody = StreamUtils.copyToString(
+        inputStream,
+        StandardCharsets.UTF_8
+    );  
+      
+    System.out.println("inputStream = " + inputStream);  
+    System.out.println(messageBody);
+    ...
+}
+```
+
+You can read the `messageBody` using `inputStream`.
+
+```java
+private final ObjectMapper objectMapper = new ObjectMapper();
+
+...
+
+HelloData helloData = objectMapper.readValue(
+    messageBody,
+    HelloData.class
+);
+```
+
+This is an example of receiving `json` data and mapping it.
+
+## request.getRequestDispatcher
+
+```java
+@WebServlet(name = "mvcMemberFormServlet", urlPatterns = "/servlet/mcv/members/new-form")  
+public class MvcMemberFormServlet extends HttpServlet {  
+    @Override  
+    protected void service(
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) throws ServletException, IOException {  
+        String viewPath = "/WEB-INF/views/new-form.jsp";  
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher(viewPath);  
+
+        dispatcher.forward(request, response);  
+    }  
+}
+```
+
+Using `dispatcher.forward` determines the web page the client visits without using a redirect.
+
+## request.setAttribute
+
+```java
+request.setAttribute("members", members);
+```
+
+Sets the name and value of `attribute`. Can be passed to an `html/jsp` file.
+
+
+
+---
+# Reference
+
+
+

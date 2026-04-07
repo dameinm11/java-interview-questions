@@ -2986,4 +2986,4 @@ The Object class is the parent class of all the classes in java by default.
     <b><a href="#">↥ back to top</a></b>
 </div>
 
-
+https://github.com/Messaging24/java-interview/blob/a10ac8dde7a7422a7e54fd882bd7d3a8711e1085/core.md
